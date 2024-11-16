@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Chandelier Animation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #191919;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="chandelierCanvas"></canvas>
+    <script>
+        const canvas=document.getElementById('chandelierCanvas');
+        const ctx=canvas.getContext('2d');
+        let particles=[];
+        let particleCount=50;
+        let mouse={x:null,y:null};
+        function resizeCanvas()
+        {
+            canvas.width=window.innerWidth;
+            canvas.height=window.innerHeight;
+            particles.length=0;
+            init();
+        }
+        class Particle{
+            constructor(anchorX)
+            {
+
+                this.anchorX=anchorX;
+                this.anchorY=0;
+                this.x=anchorX;
+                this.y=Math.random()*(canvas.height/2)+50;
+                this.baseY=this.y;
+                this.radius=Math.random()*3+2;
+                this.opacity=Math.random()*0.5+0.5;
+                this.swingFactor=Math.random()*0.1+0.05;
+            };
+
+            update(){
+                const dx=(mouse.x-this.x);
+                const dy=(mouse.y-this.y);
+                const distance=Math.sqrt(dx*dx+dy*dy);
+                if(distance<150)
+            {
+                this.x+=dx*0.03;
+                this.y+=dy*0.03;
+            }
+            else{
+                this.x+=(this.anchorX-this.x)*this.swingFactor;
+                this.y+=(this.baseY-this.y)*this.swingFactor;
+            }
+            }
+            draw()
+            {
+             ctx.beginPath();
+             ctx.moveTo(this.anchorX,this.anchorY);
+             ctx.lineTo(this.x,this.y);
+             ctx.lineWidth=1;
+             ctx.strokeStyle=`rgba(255, 215, 0, 0.3)`;
+ctx.stroke();
+ctx.closePath();
+
+                // Draw particle as a circle
+                ctx.beginPath();
+                ctx.arc(this.x,this.y,this.radius,0,Math.PI*2);
+                ctx.fillStyle=(`rgba(255,255,255,${this.opacity})`);
+                ctx.fill();
+                ctx.closePath();
+            }
+    
+        }
+        function init()
+        {
+            for(let i=0;i<particleCount;i++)
+        {
+            const anchorX=Math.random()*canvas.width;
+            particles.push(new Particle(anchorX));
+        }
+    }
+        function animate()
+        {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            particles.forEach((particle)=>{
+                particle.update();
+                particle.draw();
+            })
+            requestAnimationFrame(animate);
+        }
+        
+        window.addEventListener('mousemove',function(e){
+            mouse.x=e.clientX;
+            mouse.y=e.clientY;
+        });
+
+        window.addEventListener('resize',resizeCanvas);
+        window.addEventListener('load',resizeCanvas);
+        animate();
+    </script>
+    </body>
+    </html>
